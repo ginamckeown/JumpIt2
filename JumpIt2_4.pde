@@ -1,3 +1,6 @@
+// Images
+PImage trophy;
+
 // Buttons
 Button start, homeScreen, leaderBoard, enter, textbox, green, blue, orange;
 boolean gameOpen, homeScreenOpen, leaderBoardOpen, enterPressed, textboxPressed;
@@ -27,6 +30,9 @@ color leaderBoardC = color(207, 161, 64);
 
 void setup() {
   size(600, 600);
+  // Image 
+  trophy = loadImage("trophy.png");
+  
   // Create buttons
   start = new Button(width/2, 500, 300, 80, 20, color(35, 174, 169));
   enter = new Button(width/2, height/2, 85, 40, 10, color(35, 174, 169));
@@ -297,8 +303,9 @@ void displayMenu() {
   noStroke();
   leaderBoard.display();
   leaderBoard.hover();
-  strokeWeight(4);
-  stroke(0);
-  arc(leaderBoard.x, leaderBoard.y - leaderBoard.w/4, 30, 50, 0, PI);
-  ellipse(leaderBoard.x, leaderBoard.y - leaderBoard.w/4, 30, 10);
+  image(trophy, leaderBoard.x, leaderBoard.y - leaderBoard.w/4);
+  //strokeWeight(4);
+  //stroke(0);
+  //arc(leaderBoard.x, leaderBoard.y - leaderBoard.w/4, 30, 50, 0, PI);
+  //ellipse(leaderBoard.x, leaderBoard.y - leaderBoard.w/4, 30, 10);
 }
