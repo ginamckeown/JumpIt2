@@ -16,8 +16,8 @@ class Cloud {
 
   void move() {
     x -= s;
-    if (x > width + w/2) {      
-      x = 0 - w/2;
+    if (x < 0 - w/2) {      
+      x = width + w/2;
     }
   }
 }

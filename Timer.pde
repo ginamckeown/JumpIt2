@@ -1,14 +1,27 @@
 class Timer {
-  int time;
-  int timePast;
+  int seconds, minutes;
+  int currentTime;
 
   Timer() {
+    seconds = 0;
+    minutes = 0;
+    currentTime = millis();
   }
 
   void display() {
-    timePast = second();
-    time = second() - timePast;
-    fill(189, 138, 186);
-    text(time, 540, 40);
+    fill(156, 106, 153);
+    textSize(30);
+    textAlign(CENTER);
+    text(getMinutes() + ":" + getSeconds(), width/12*11, height/15);
+  }
+  
+  int getSeconds() {
+    seconds = millis()/1000 - getMinutes() * 60;
+    return seconds;
+  }
+
+  int getMinutes() {
+    minutes = millis()/(1000 * 60);
+    return minutes;
   }
 }

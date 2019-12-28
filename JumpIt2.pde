@@ -1,5 +1,6 @@
 // Images
-PImage trophy;
+PImage trophyIcon;
+PImage homeIcon;
 
 // Buttons
 Button start, homeScreen, leaderBoard, enter, textbox, green, blue, orange;
@@ -17,12 +18,15 @@ float nameWidth;
 Cloud[] clouds;
 Timer timer;
 
+// Highscore
+int highScore1, highScore2, highScore3, highScore4, highScore5;
+
 //Player
 Player player;
 color playerColor;
 
 //Platform
-Platform platform1, platform2, platform3;
+Platform[] platform;
 
 // Colors
 color homeScreenC = color(65, 138, 138);
@@ -31,8 +35,9 @@ color leaderBoardC = color(207, 161, 64);
 void setup() {
   size(600, 600);
   // Image 
-  trophy = loadImage("trophy.png");
-  
+  trophyIcon = loadImage("trophyIcon.png");
+  homeIcon = loadImage("homeIcon.png");
+
   // Create buttons
   start = new Button(width/2, 500, 300, 80, 20, color(35, 174, 169));
   enter = new Button(width/2, height/2, 85, 40, 10, color(35, 174, 169));
@@ -44,9 +49,10 @@ void setup() {
   orange = new Button(width/2 + 50, width/3*2, 40, 40, 10, color(204, 144, 24));
 
   // Create platforms
-  platform1 = new Platform();
-  platform2 = new Platform();
-  platform3 = new Platform();
+  platform = new Platform[3];
+  platform[0] = new Platform();
+  platform[1] = new Platform();
+  platform[2] = new Platform();
 
   // Create timer
   timer = new Timer();
@@ -61,14 +67,14 @@ void setup() {
   clouds[5] = new Cloud(390, 180, 80, 80, .2);
   clouds[6] = new Cloud(510, 110, 90, 90, .2);
   clouds[7] = new Cloud(550, 120, 70, 70, .2);
+
+  // Create player
+  player = new Player();
 }
 
 void draw() {
   // The homeScreen is the first open tab, automatically opened when game starts
   homeScreenOpen = true;
-
-  // Create player
-  player = new Player(nameSaved, playerColor);
 
   // Main functions
   displayHomeScreen();
@@ -121,11 +127,11 @@ void mousePressed() {
 
   // Set color based on buttons pressed
   if (green.pressed()) {
-    playerColor = color(green.c);
+    player.changeColorTo(green.c);
   } else if (blue.pressed()) {
-    playerColor = color(blue.c);
+    player.changeColorTo(blue.c);
   } else if (orange.pressed()) {
-    playerColor = color(orange.c);
+    player.changeColorTo(orange.c);
   } 
   //  else {
   //    // If no color chosen, random color will be used
@@ -141,23 +147,30 @@ void keyPressed() {
       nameTyping = nameTyping.substring (0, nameTyping.length()-1);
     } else {
       nameWidth = textWidth(nameTyping);
-      if (nameWidth < textbox.w - 40) {
+      if (nameWidth < textbox.w - 40) { // type within textbox only
         // Each character typed by the user is added to the end of the string variable
         nameTyping = nameTyping + key;
       }
     }
   }
+
+  //check for touching
+  //something like: 
+  //for (i = 0;  i < platforms.length; i++){
+  //   check each platform by: player.isTouching(platforms[i]);
+  //}
 }
 
 void displayHomeScreen() {
   if (homeScreenOpen) {
+    textAlign(CENTER); // center text
     background(159, 201, 199);
     //Game Name
     textSize(110);
     fill(homeScreenC, 50); // shadow
-    text("Jump It", width/5 - 10, height/4 + 5);
+    text("Jump It", width/2 - 5, height/4 + 5);
     fill(homeScreenC);
-    text("Jump It", width/5, height/4);
+    text("Jump It", width/2, height/4);
 
     // Start Button
     noStroke();
@@ -165,21 +178,22 @@ void displayHomeScreen() {
     start.hover();
     fill(255);
     textSize(60);
-    text("START", start.x - start.w/3, start.y + start.h/4);
+    text("START", width/2, start.y + start.h/4);
     fill(0);
     fill(150);
-    rect(292, start.y + 70, 80, 30, 10);
-    fill(0);
+    rect(286, start.y + 70, 75, 30, 10);
+    fill(10, 69, 69);
     textSize(23);
-    text("Press SPACE to Jump", start.x - 110, start.y + start.h);
+    text("Press SPACE to Jump", width/2, start.y + start.h);
 
     // Enter Button
     enter.display();
     enter.hover();
     fill(255);
     textSize(20);
-    text("ENTER", enter.x - 35, enter.y + 5);
+    text("ENTER", width/2, enter.y + 5);
 
+    textAlign(BASELINE);
     // Text Box for Name
     fill(255);
     textbox.display();
@@ -197,6 +211,9 @@ void displayHomeScreen() {
     textSize(25);
     text(nameTyping, textX, textY); // input
 
+    // Change to new name
+    player.changeNameTo(nameSaved);
+
     // Display text cursor
     nameWidth = textWidth(nameTyping);
     if (textboxPressed) {
@@ -207,6 +224,14 @@ void displayHomeScreen() {
       }
     }
 
+    // If text is too long, user can no longe type
+    textAlign(CENTER);
+    if (nameWidth >= textbox.w - 40) {
+      fill(230, 41, 28);
+      textSize(15);
+      text("Your text is too long", width/2, textbox.y + 45);
+    }
+
     // Display player color options
     green.display();
     green.hover();
@@ -214,10 +239,9 @@ void displayHomeScreen() {
     blue.hover();
     orange.display();
     orange.hover();
-
     textSize(25);
-    fill(0);
-    text("Select Color:", blue.x - 75, blue.y - 30);
+    fill(10, 69, 69);
+    text("Select Color:", width/2, blue.y - 30);
   }
 }
 
@@ -228,9 +252,9 @@ void displayLeaderBoard() {
     // Title
     textSize(60);
     fill(0, 40); // shadow
-    text("Leader Board", width/5 + 16, height/7 + 4 ); 
+    text("Leader Board", width/2, height/7 + 4 ); 
     fill(196, 151, 27);
-    text("Leader Board", width/5 + 20, height/7);
+    text("Leader Board", width/2, height/7);
 
     // Create leaderBoard
     int boardX, boardY, boardW, boardH;
@@ -266,24 +290,24 @@ void displayGame() {
 
     // Timer
     timer.display();
-
-    // Display player name
-    fill(0);
-    textSize(30);
-    float nameWidth = textWidth(player.name);
-    text(player.name, width/2 - nameWidth/2, height/15);
+    
+    // Player Name
+    player.displayName();
 
     // Create Clouds
     for (int i = 0; i < clouds.length; i++) {
       clouds[i].display();
       clouds[i].move();
     }
-    
+
     // display player
     player.display();
-    
+
     // display platforms
-    
+    for(int i = 0; i > platform.length; i++) {
+      platform[i].display();
+      platform[i].move();
+    }
   }
 }
 
@@ -294,18 +318,11 @@ void displayMenu() {
   homeScreen.hover();
   strokeWeight(4);
   stroke(0);
-  rect(homeScreen.x, homeScreen.y + 10, 30, 20, 5);
-  triangle(homeScreen.x - 18, homeScreen.y, 
-    homeScreen.x, homeScreen.y - 15, 
-    homeScreen.x + 18, homeScreen.y);
+  image(homeIcon, homeScreen.x - homeScreen.w/12*5, homeScreen.y - homeScreen.w/12*5);
 
   // Create leaderBoard button
   noStroke();
   leaderBoard.display();
   leaderBoard.hover();
-  image(trophy, leaderBoard.x, leaderBoard.y - leaderBoard.w/4);
-  //strokeWeight(4);
-  //stroke(0);
-  //arc(leaderBoard.x, leaderBoard.y - leaderBoard.w/4, 30, 50, 0, PI);
-  //ellipse(leaderBoard.x, leaderBoard.y - leaderBoard.w/4, 30, 10);
+  image(trophyIcon, leaderBoard.x - leaderBoard.w/2, leaderBoard.y - leaderBoard.h/2);
 }
